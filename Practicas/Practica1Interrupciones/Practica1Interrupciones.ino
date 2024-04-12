@@ -4,8 +4,8 @@
   Abril de 2024
   Práctica 1
   
-  Implementación un firmware que permite sensar la temperatura de un sensor lm35 y muestra por serial la
-  temperatura sensada. La medición de la temperatura la debe hacer cuando se genere una interrupción en bajo para el pin
+  Implementación un firmware que permite censar la temperatura de un sensor lm35 y muestra por serial la
+  temperatura censada. La medición de la temperatura la debe hacer cuando se genere una interrupción en bajo para el pin
   2. El programa debe permanecer el resto del tiempo en un modo de bajo consumo.
 
 */
