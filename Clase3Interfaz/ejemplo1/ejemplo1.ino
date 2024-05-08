@@ -20,7 +20,7 @@ void setup(){
   analogWrite(led2, 0);
 
   // Interrupción cada 1 segundo
-  Timer1.initialize(1000000);
+  Timer1.initialize(500000);
   Timer1.attachInterrupt(analogData); // Función de interrupción
 }
 
