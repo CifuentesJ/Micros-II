@@ -19,6 +19,7 @@
 
 */
 
+
 #if CONFIG_FREERTOS_UNICORE
 static const BaseType_t app_cpu = 0;
 #else
@@ -73,7 +74,7 @@ void onAndOffLed1(void *parameter) {
 
 void onAndOffLed2(void *parameter) {
   bool flagLed = HIGH;
-
+  digitalWrite(ledTask3, flagLed);
   while (true) {
     if (xQueueReceive(xQueue, &flagLed, portMAX_DELAY)) {
       Serial.println("--------------------------------------------");
@@ -100,8 +101,6 @@ void IRAM_ATTR catchAndSendFlag() {
 }
 
 
-
-
 // Inicializaciones y funciones generales
 
 void setup() {
@@ -111,6 +110,7 @@ void setup() {
   pinMode(ledTask1, OUTPUT);
   pinMode(ledTask3, OUTPUT);
   pinMode(button, INPUT_PULLUP);
+
 
   // Inicialización del programa
   Serial.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
@@ -160,7 +160,8 @@ void setup() {
     return;
   }
 
-  attachInterrupt(digitalPinToInterrupt(button), catchAndSendFlag, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(button), catchAndSendFlag, FALLING);
+
 }
 
 void loop() {}
