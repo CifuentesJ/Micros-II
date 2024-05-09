@@ -18,6 +18,7 @@
   sensor de temperatura de su preferencia
 
 */
+#include "DHT.h"
 
 
 #if CONFIG_FREERTOS_UNICORE
@@ -30,9 +31,17 @@ static const BaseType_t app_cpu = 1;
 #define ledTask1 23
 #define button 22
 #define ledTask3 19
+#define dhtPin 32
+#define buzzer 33
+#define DHTTYPE DHT11
 
+DHT dht(dhtPin, DHTTYPE);
 
+volatile float cont;
+float t = 0;
 int time1 = 5000;
+hw_timer_t *timer = NULL;  // Apuntador
+portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 
 // Manejador de cole
@@ -101,6 +110,15 @@ void IRAM_ATTR catchAndSendFlag() {
 }
 
 
+void IRAM_ATTR getTemperature() {
+  portENTER_CRITICAL_ISR(&timerMux);
+  cont++;
+  portEXIT_CRITICAL_ISR(&timerMux);
+}
+
+
+
+
 // Inicializaciones y funciones generales
 
 void setup() {
@@ -110,14 +128,17 @@ void setup() {
   pinMode(ledTask1, OUTPUT);
   pinMode(ledTask3, OUTPUT);
   pinMode(button, INPUT_PULLUP);
+  pinMode(buzzer, OUTPUT);
+  
 
+  dht.begin();
 
   // Inicialización del programa
-  Serial.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+  Serial.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
   Serial.println("");
   Serial.println("          Initializing the program... ");
   Serial.println("");
-  Serial.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+  Serial.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
 
   // Tareas
@@ -162,6 +183,28 @@ void setup() {
 
   attachInterrupt(digitalPinToInterrupt(button), catchAndSendFlag, FALLING);
 
+  // Punto 5
+  timer = timerBegin(0, 80, true);              // timer 0, prescalar: 80, UP counting
+  timerAttachInterrupt(timer, &getTemperature, true);  // Attach interrupt
+  timerAlarmWrite(timer, 15000000, true);        // 1000000 for 1 sec. delay.
+  timerAlarmEnable(timer);
 }
 
-void loop() {}
+void loop() {
+  if (cont > 0) {
+    portENTER_CRITICAL(&timerMux);
+    cont--;
+    portEXIT_CRITICAL(&timerMux);
+
+    t = dht.readTemperature();
+    digitalWrite(buzzer, HIGH);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    digitalWrite(buzzer, LOW);
+    Serial.println("--------------------------------------------");
+    Serial.println("           INTERRUPTION DETECTED           ");
+    Serial.print("              Temperature: ");
+    Serial.print(t);
+    Serial.println("");
+    Serial.println("--------------------------------------------");
+  }
+}
