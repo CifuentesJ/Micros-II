@@ -41,7 +41,6 @@ void handleToggle(){
   ledState = !ledState; 
   digitalWrite(ledPin, ledState);
   server.send(200, "text/html", getHTML(ledState));
-  server.on("/");
 }
 
 
